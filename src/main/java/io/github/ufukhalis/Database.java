@@ -21,11 +21,7 @@ public final class Database {
 
     private final ConnectionPool connectionPool;
 
-    private final int maxConnections;
-    private final int minConnections;
     private final long periodForHealthCheckInMillis;
-    private final String jdbcUrl;
-    private final Executor THREAD_POOL;
     private final HealthCheck healthCheck;
 
     private Database (int maxConnections,
@@ -33,18 +29,14 @@ public final class Database {
                       String jdbcUrl,
                       HealthCheck healthCheck,
                       long periodForHealthCheckInMillis) {
-        this.maxConnections = maxConnections;
-        this.minConnections = minConnections;
         this.periodForHealthCheckInMillis = periodForHealthCheckInMillis;
-        this.jdbcUrl = jdbcUrl;
         this.healthCheck = healthCheck;
-        this.THREAD_POOL  = Executors.newFixedThreadPool(maxConnections * 2);
         this.connectionPool =
                 new ConnectionPool(
-                        this.maxConnections,
-                        this.minConnections,
-                        this.jdbcUrl,
-                        this.THREAD_POOL
+                        maxConnections,
+                        minConnections,
+                        jdbcUrl,
+                        Executors.newFixedThreadPool(maxConnections * 2)
                 );
 
         createIntervalForHealthChecking();
