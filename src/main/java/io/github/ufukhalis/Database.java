@@ -13,7 +13,6 @@ import reactor.core.scheduler.Schedulers;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.time.Duration;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public final class Database {
@@ -43,20 +42,27 @@ public final class Database {
         createIntervalForHealthChecking();
     }
 
-    public Mono<ResultSet> executeQuery(String sql) {
+    public Flux<ResultSet> executeQuery(String sql) {
+        Utils.objectRequireNonNull(sql, Option.some("Sql query cannot be empty!"));
+
         log.debug("Executing query -> {}", sql);
 
         Mono<Connection> connectionMono = this.connectionPool.getConnection();
 
-        return connectionMono.map(connection ->
+        Mono<ResultSet> resultSetMono = connectionMono.map(connection ->
             Try.of(() -> connection.prepareStatement(sql))
                     .map(preparedStatement -> Try.of(preparedStatement::executeQuery)
                             .getOrElseThrow(e -> new RuntimeException("Query execution failed", e))
                     ).getOrElseThrow(e -> new RuntimeException("Prepare statement failed", e))
         ).doAfterSuccessOrError((rs, throwable) -> connectionPool.releaseConnection(connectionMono).subscribe());
+
+        return resultSetMono.flatMapMany(Utils::convertMonoResultSetToFlux);
     }
 
+
     public Mono<Integer> executeUpdate(String sql) {
+        Utils.objectRequireNonNull(sql, Option.some("Sql query cannot be empty!"));
+
         log.debug("Executing query -> {}", sql);
 
         Mono<Connection> connectionMono = this.connectionPool.getConnection();
