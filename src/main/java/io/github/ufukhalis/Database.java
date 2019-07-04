@@ -12,10 +12,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Duration;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public final class Database {
