@@ -2,6 +2,7 @@ package io.github.ufukhalis;
 
 import io.github.ufukhalis.db.ConnectionPool;
 import io.github.ufukhalis.db.HealthCheck;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,26 +86,31 @@ public final class Database {
         private HealthCheck healthCheck = HealthCheck.OTHER;
 
         public Builder maxConnections(int maxConnections) {
+            Utils.valueRequirePositive(maxConnections, Option.none());
             this.maxConnections = maxConnections;
             return this;
         }
 
         public Builder minConnections(int minConnections) {
+            Utils.valueRequirePositive(minConnections, Option.none());
             this.minConnections = minConnections;
             return this;
         }
 
         public Builder periodForHealthCheckInMillis(int millis) {
+            Utils.valueRequirePositive(millis, Option.none());
             this.periodForHealthCheckInMillis = millis;
             return this;
         }
 
         public Builder jdbcUrl(String jdbcUrl) {
+            Utils.objectRequireNonNull(jdbcUrl, Option.some("Jdbc url cannot be null!"));
             this.jdbcUrl = jdbcUrl;
             return this;
         }
 
         public Builder healthCheck(HealthCheck healthCheck) {
+            Utils.objectRequireNonNull(healthCheck, Option.some("HealthCheck cannot be null!"));
             this.healthCheck = healthCheck;
             return this;
         }
