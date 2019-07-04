@@ -24,6 +24,8 @@ public class DatabaseTests {
 
     final Database database = new Database.Builder()
             .maxConnections(5)
+            .minConnections(2)
+            .periodForHealthCheckInMillis(5000)
             .jdbcUrl("jdbc:h2:~/test")
             .healthCheck(HealthCheck.H2)
             .build();
