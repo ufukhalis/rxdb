@@ -30,10 +30,7 @@ public final class Utils {
     }
 
     private static void closeSilently(AutoCloseable c) {
-        try {
-            c.close();
-        } catch (Exception e) {
-        }
+        Try.run(c::close).onFailure(throwable -> log.error("Connection couldn't close {}", c));
     }
 
     static Flux<ResultSet> convertMonoResultSetToFlux(ResultSet resultSet) {

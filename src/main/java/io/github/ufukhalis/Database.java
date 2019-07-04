@@ -43,6 +43,8 @@ public final class Database {
     }
 
     public Flux<ResultSet> executeQuery(String sql) {
+        Utils.objectRequireNonNull(sql, Option.some("Sql query cannot be empty!"));
+
         log.debug("Executing query -> {}", sql);
 
         Mono<Connection> connectionMono = this.connectionPool.getConnection();
@@ -59,6 +61,8 @@ public final class Database {
 
 
     public Mono<Integer> executeUpdate(String sql) {
+        Utils.objectRequireNonNull(sql, Option.some("Sql query cannot be empty!"));
+
         log.debug("Executing query -> {}", sql);
 
         Mono<Connection> connectionMono = this.connectionPool.getConnection();
