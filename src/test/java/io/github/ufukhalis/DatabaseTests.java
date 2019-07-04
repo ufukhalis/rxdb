@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 public class DatabaseTests {
 
-    final String createTableSql =  "drop table REGISTER; CREATE TABLE REGISTER " +
+    final String createTableSql =  "drop table if exists REGISTER; CREATE TABLE REGISTER " +
             "(id INTEGER not NULL, " +
             " first VARCHAR(255), " +
             " last VARCHAR(255), " +
