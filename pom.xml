@@ -70,7 +70,6 @@
                     <repoToken>${COVERALLS_TOKEN}</repoToken>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
