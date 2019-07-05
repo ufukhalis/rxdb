@@ -2,6 +2,7 @@ package io.github.ufukhalis;
 
 import io.github.ufukhalis.db.ConnectionPool;
 import io.github.ufukhalis.db.HealthCheck;
+import io.github.ufukhalis.query.Select;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
@@ -39,6 +40,10 @@ public final class Database {
                         Executors.newFixedThreadPool(maxConnections * 2)
                 );
         createIntervalForHealthChecking();
+    }
+
+    public Select select(String sql) {
+        return new Select(executeQuery(sql));
     }
 
     public Flux<ResultSet> executeQuery(String sql) {
