@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/ufukhalis/rxdb.svg?branch=master)](https://travis-ci.org/ufukhalis/rxdb)
+[![Coverage Status](https://coveralls.io/repos/github/ufukhalis/rxdb/badge.svg?branch=master)](https://coveralls.io/github/ufukhalis/rxdb?branch=master)
+
 RXDB
 ===================
 A reactive library option for JDBC calls. In the background, it uses Reactor library (https://projectreactor.io).
