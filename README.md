@@ -29,7 +29,7 @@ After, adding dependencies, you can create an instance from `Database` class.
             
 Using `Database` instance, you can send queries to your database.
 
-Inserting a record in the table.
+Inserting a record to the table.
 
     final String insertSql = "INSERT INTO table_name VALUES (1, 'Ufuk', 'Halis', 28)";
     Mono<Integer> resultMono = database.executeUpdate(insertSql);
@@ -39,7 +39,35 @@ Fetching records from the table.
     final String selectSql = "select * from table_name";
     Flux<ResultSet> resultFlux = database.executeQuery(selectSql);
 
+You can also map your records directly to Java Object too.
+Firstly, you should add `@Column` annotation to your pojo class like below.
+        
+    public class TestEntity {
+        @Column(value = "id")
+        private int id;
+    
+        @Column(value = "first")
+        private String first;
+    
+        @Column(value = "last")
+        private String last;
+    
+        @Column(value = "age")
+        private int age;
+        
+        // Getters and Setters
+    }
+    
+After, you can use your `database` instance like below.
 
+    Flux<TestEntity> result = database
+                    .select(selectSql)
+                    .get(TestEntity.class);
+                    
+Also, if you would like to get only one result, you can use `findFirst` method.
+    
+    Mono<TestEntity> result = database
+                    .findFirst(TestEntity.class);
 
 Note
 ---

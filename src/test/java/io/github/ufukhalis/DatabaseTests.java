@@ -1,10 +1,13 @@
 package io.github.ufukhalis;
 
 import io.github.ufukhalis.db.HealthCheck;
+import io.github.ufukhalis.model.TestEntity;
 import io.vavr.control.Try;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
+
+import java.util.List;
 
 public class DatabaseTests {
 
@@ -45,8 +48,25 @@ public class DatabaseTests {
         int size = database.executeQuery(selectSql)
                 .map(resultSet -> Try.of(() -> resultSet.getInt("id"))
                         .getOrElseThrow(e -> new RuntimeException("Unexpected exception", e)))
-                .collectList().block().size();
+                .collectList()
+                .block()
+                .size();
 
         Assertions.assertEquals(2, size);
+    }
+
+    @Test
+    void test_select_get_shouldReturn_valid_listSize() {
+        database.executeUpdate(createTableSql).block();
+        database.executeUpdate(insertSql).block();
+        database.executeUpdate(insertSql2).block();
+
+        List<TestEntity> list = database
+                .select(selectSql)
+                .get(TestEntity.class)
+                .collectList()
+                .block();
+
+        Assertions.assertEquals(2, list.size());
     }
 }
