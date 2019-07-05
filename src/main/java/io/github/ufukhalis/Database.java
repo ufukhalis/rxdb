@@ -38,7 +38,6 @@ public final class Database {
                         jdbcUrl,
                         Executors.newFixedThreadPool(maxConnections * 2)
                 );
-
         createIntervalForHealthChecking();
     }
 
@@ -49,12 +48,13 @@ public final class Database {
 
         Mono<Connection> connectionMono = this.connectionPool.getConnection();
 
-        Mono<ResultSet> resultSetMono = connectionMono.map(connection ->
-            Try.of(() -> connection.prepareStatement(sql))
+        Mono<ResultSet> resultSetMono = connectionMono.map(connection -> {
+            log.debug("Executing query -> {}", sql);
+            return  Try.of(() -> connection.prepareStatement(sql))
                     .map(preparedStatement -> Try.of(preparedStatement::executeQuery)
                             .getOrElseThrow(e -> new RuntimeException("Query execution failed", e))
-                    ).getOrElseThrow(e -> new RuntimeException("Prepare statement failed", e))
-        ).doAfterSuccessOrError((rs, throwable) -> connectionPool.releaseConnection(connectionMono).subscribe());
+                    ).getOrElseThrow(e -> new RuntimeException("Prepare statement failed", e));
+        }).doFinally(ignore -> this.connectionPool.add(connectionMono));
 
         return resultSetMono.flatMapMany(Utils::convertMonoResultSetToFlux);
     }
@@ -63,15 +63,14 @@ public final class Database {
     public Mono<Integer> executeUpdate(String sql) {
         Utils.objectRequireNonNull(sql, Option.some("Sql query cannot be empty!"));
 
-        log.debug("Executing query -> {}", sql);
-
         Mono<Connection> connectionMono = this.connectionPool.getConnection();
 
-        return connectionMono.map(connection ->
-                Try.withResources(connection::createStatement)
-                        .of(statement -> statement.executeUpdate(sql))
-                        .getOrElseThrow(e -> new RuntimeException("Query execution failed", e))
-        ).doAfterSuccessOrError((rs, throwable) -> connectionPool.releaseConnection(connectionMono).subscribe());
+        return connectionMono.map(connection -> {
+            log.debug("Executing query -> {}", sql);
+            return Try.withResources(connection::createStatement)
+                    .of(statement -> statement.executeUpdate(sql))
+                    .getOrElseThrow(e -> new RuntimeException("Query execution failed", e));
+        }).doFinally(ignore -> this.connectionPool.add(connectionMono));
     }
 
     private void createIntervalForHealthChecking() {

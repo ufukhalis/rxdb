@@ -29,7 +29,7 @@ public final class Utils {
         }
     }
 
-    private static void closeSilently(AutoCloseable c) {
+    static void closeSilently(AutoCloseable c) {
         Try.run(c::close).onFailure(throwable -> log.error("Connection couldn't close {}", c));
     }
 

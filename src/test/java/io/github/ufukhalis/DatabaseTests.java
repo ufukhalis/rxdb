@@ -1,11 +1,10 @@
 package io.github.ufukhalis;
 
 import io.github.ufukhalis.db.HealthCheck;
+import io.vavr.control.Try;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
-
-import java.sql.SQLException;
 
 public class DatabaseTests {
 
@@ -38,12 +37,16 @@ public class DatabaseTests {
     }
 
     @Test
-    void test_executeQuery_shouldReturn_validObject() {
+    void test_executeQuery_shouldReturn_correctSize() {
         database.executeUpdate(createTableSql).block();
         database.executeUpdate(insertSql).block();
         database.executeUpdate(insertSql2).block();
 
-        StepVerifier.create(database.executeQuery(selectSql))
-                .expectComplete();
+        int size = database.executeQuery(selectSql)
+                .map(resultSet -> Try.of(() -> resultSet.getInt("id"))
+                        .getOrElseThrow(e -> new RuntimeException("Unexpected exception", e)))
+                .collectList().block().size();
+
+        Assertions.assertEquals(2, size);
     }
 }
