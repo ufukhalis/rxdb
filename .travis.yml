@@ -1,4 +1,4 @@
 language: java
 sudo: false
 after_success:
-  - mvn clean test install jacoco:report coveralls:report DrepoToken=$COVERALLS_TOKEN
+  - mvn clean test jacoco:report coveralls:report
