@@ -7,6 +7,27 @@
     <groupId>io.github.ufukhalis</groupId>
     <artifactId>rxdb</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>Apache-2.0 License</name>
+            <url>https://opensource.org/licenses/Apache-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Ufuk Halis</name>
+            <email>ufukhalis@gmail.com</email>
+        </developer>
+    </developers>
+
     <build>
         <plugins>
             <plugin>
