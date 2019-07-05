@@ -1,6 +1,7 @@
 package io.github.ufukhalis;
 
 import io.github.ufukhalis.db.HealthCheck;
+import io.github.ufukhalis.model.TestEntity;
 import io.vavr.control.Try;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

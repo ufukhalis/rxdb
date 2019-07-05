@@ -1,4 +1,6 @@
-package io.github.ufukhalis;
+package io.github.ufukhalis.model;
+
+import io.github.ufukhalis.Column;
 
 public class TestEntity {
     @Column(value = "id")
