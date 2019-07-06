@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/ufukhalis/rxdb.svg?branch=master)](https://travis-ci.org/ufukhalis/rxdb)
 [![Coverage Status](https://coveralls.io/repos/github/ufukhalis/rxdb/badge.svg?branch=master)](https://coveralls.io/github/ufukhalis/rxdb?branch=master)
+![Maven Central](https://img.shields.io/maven-central/v/io.github.ufukhalis/rxdb.svg)
 
 RXDB
 ===================
@@ -7,7 +8,7 @@ A reactive library option for JDBC calls. In the background, it uses Reactor lib
 
 How to Use
 ------------
-Firstly, you should add latest `rxdb` dependency to your project. (Still in progress..)
+Firstly, you should add latest `rxdb` dependency to your project.
 
     <dependency>
         <groupId>io.github.ufukhalis</groupId>
