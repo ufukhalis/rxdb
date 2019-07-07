@@ -13,7 +13,7 @@ class QueryParameter <T> {
 
     private String bindedSql;
 
-    public QueryParameter(String sql) {
+    QueryParameter(String sql) {
         this.bindedSql = sql;
     }
 
@@ -33,7 +33,7 @@ class QueryParameter <T> {
         return bindedSql;
     }
 
-    protected String getBindedSql() {
+    String getBindedSql() {
         return bindedSql;
     }
 
