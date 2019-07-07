@@ -43,7 +43,7 @@ public final class Database {
     }
 
     public Select select(String sql) {
-        return new Select(executeQuery(sql));
+        return new Select(sql, this::executeQuery);
     }
 
     public Flux<ResultSet> executeQuery(String sql) {

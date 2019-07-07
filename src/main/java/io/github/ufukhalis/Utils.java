@@ -17,9 +17,15 @@ public final class Utils {
 
     }
 
-    static void objectRequireNonNull(Object o, Option<String> message) {
+    public static void objectRequireNonNull(Object o, Option<String> message) {
         if (o == null) {
             throw new IllegalArgumentException(message.getOrElse("Object cannot be null!"));
+        }
+    }
+
+    public static void checkCondition(boolean c, Option<String> message) {
+        if (!c) {
+            throw new IllegalArgumentException(message.getOrElse("Condition is not valid!"));
         }
     }
 
@@ -27,6 +33,10 @@ public final class Utils {
         if (value < 0) {
             throw new IllegalArgumentException(message.getOrElse("Value cannot be negative!"));
         }
+    }
+
+    public static String escapeSql(String str) {
+        return str.replace("'", "''");
     }
 
     static void closeSilently(AutoCloseable c) {

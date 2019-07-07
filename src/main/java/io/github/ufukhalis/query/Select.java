@@ -2,31 +2,47 @@ package io.github.ufukhalis.query;
 
 import io.github.ufukhalis.Predicates;
 import io.github.ufukhalis.Column;
+import io.github.ufukhalis.Utils;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.ResultSet;
+import java.util.function.Function;
 
 import static io.vavr.API.*;
 
-public class Select {
+public class Select extends QueryParameter{
 
-    private Flux<ResultSet> resultSetFlux;
+    private String sql;
+    private Function<String, Flux<ResultSet>> queryFunc;
 
-    public Select(Flux<ResultSet> resultSetFlux) {
-        this.resultSetFlux = resultSetFlux;
+    public Select(String sql, Function<String, Flux<ResultSet>> queryFunc) {
+        this.sql = sql;
+        this.queryFunc = queryFunc;
+    }
+
+    public Select bindParameters(Object ...params) {
+        this.sql = bind(this.sql, List.of(params));
+        return this;
+    }
+
+    public Select bindParameters(java.util.List<Object> params) {
+        this.sql = bind(this.sql, List.ofAll(params));
+        return this;
     }
 
     public Flux<ResultSet> get() {
-        return this.resultSetFlux;
+        return queryFunc.apply(this.sql);
     }
 
     public <T> Flux<T> get(Class<T> clazz) {
-        return resultSetFlux.map(resultSet ->
-                Try.of(() -> find(resultSet, clazz))
-                        .getOrElseThrow(e -> new RuntimeException("Error", e))
+        return queryFunc.apply(this.sql)
+                .map(resultSet ->
+                        Try.of(() -> find(resultSet, clazz))
+                                .getOrElseThrow(e -> new RuntimeException("Error", e))
         );
     }
 
@@ -52,6 +68,10 @@ public class Select {
                 });
 
         return entity;
+    }
+
+    public String getSql() {
+        return sql;
     }
 
     private Object getValueFromResultSet(Class<?> fieldClass, String columnName, ResultSet rs) {
