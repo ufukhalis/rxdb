@@ -7,11 +7,20 @@ import io.vavr.control.Option;
 
 import static io.vavr.API.*;
 
-class QueryParameter {
+class QueryParameter <T> {
 
     private final static String BIND_PARAM_HOLDER = "\\?";
 
     private String bindedSql;
+
+    public QueryParameter(String sql) {
+        this.bindedSql = sql;
+    }
+
+    public T bindParameters(Object ...params) {
+        this.bindedSql = bind(this.bindedSql, List.of(params));
+        return (T) this;
+    }
 
     String bind(final String sql, List<Object> params) {
         Utils.objectRequireNonNull(params, Option.some("Parameters cannot be null!s"));
@@ -21,6 +30,10 @@ class QueryParameter {
 
         params.forEach(o -> this.bindedSql = bindedSql.replaceFirst(BIND_PARAM_HOLDER, resolveTypeForSQLValue(o)));
 
+        return bindedSql;
+    }
+
+    protected String getBindedSql() {
         return bindedSql;
     }
 

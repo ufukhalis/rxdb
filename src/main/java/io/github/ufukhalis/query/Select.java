@@ -2,9 +2,7 @@ package io.github.ufukhalis.query;
 
 import io.github.ufukhalis.Predicates;
 import io.github.ufukhalis.Column;
-import io.github.ufukhalis.Utils;
 import io.vavr.collection.List;
-import io.vavr.control.Option;
 import io.vavr.control.Try;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,32 +12,21 @@ import java.util.function.Function;
 
 import static io.vavr.API.*;
 
-public class Select extends QueryParameter{
+public class Select extends QueryParameter<Select> {
 
-    private String sql;
     private Function<String, Flux<ResultSet>> queryFunc;
 
     public Select(String sql, Function<String, Flux<ResultSet>> queryFunc) {
-        this.sql = sql;
+        super(sql);
         this.queryFunc = queryFunc;
     }
 
-    public Select bindParameters(Object ...params) {
-        this.sql = bind(this.sql, List.of(params));
-        return this;
-    }
-
-    public Select bindParameters(java.util.List<Object> params) {
-        this.sql = bind(this.sql, List.ofAll(params));
-        return this;
-    }
-
     public Flux<ResultSet> get() {
-        return queryFunc.apply(this.sql);
+        return queryFunc.apply(getBindedSql());
     }
 
     public <T> Flux<T> get(Class<T> clazz) {
-        return queryFunc.apply(this.sql)
+        return queryFunc.apply(getBindedSql())
                 .map(resultSet ->
                         Try.of(() -> find(resultSet, clazz))
                                 .getOrElseThrow(e -> new RuntimeException("Error", e))
@@ -71,7 +58,7 @@ public class Select extends QueryParameter{
     }
 
     public String getSql() {
-        return sql;
+        return getBindedSql();
     }
 
     private Object getValueFromResultSet(Class<?> fieldClass, String columnName, ResultSet rs) {
