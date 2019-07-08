@@ -13,7 +13,7 @@ Firstly, you should add latest `rxdb` dependency to your project.
     <dependency>
         <groupId>io.github.ufukhalis</groupId>
         <artifactId>rxdb</artifactId>
-        <version>0.0.1</version>
+        <version>0.1.0</version>
     </dependency>
     
 Then you need to add jdbc driver for your database which you want to connect.
@@ -23,7 +23,7 @@ After, adding dependencies, you can create an instance from `Database` class.
     Database database = new Database.Builder()
             .maxConnections(5) // Default 10
             .minConnections(2) // Default 5
-            .periodForHealthCheckInMillis(5000) // 5000
+            .periodForHealthCheck(Duration.ofSeconds(5)) // Default 5 seconds
             .jdbcUrl("jdbc:h2:~/test") // In-memory db
             .healthCheck(HealthCheck.H2) // Default HealthCheck.OTHER
             .build();
