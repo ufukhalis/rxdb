@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.util.List;
 
 public class DatabaseTests {
@@ -27,7 +28,7 @@ public class DatabaseTests {
     final Database database = new Database.Builder()
             .maxConnections(5)
             .minConnections(2)
-            .periodForHealthCheckInMillis(5000)
+            .periodForHealthCheck(Duration.ofSeconds(5))
             .jdbcUrl("jdbc:h2:~/test")
             .healthCheck(HealthCheck.H2)
             .build();

@@ -23,15 +23,15 @@ public final class Database {
 
     private final ConnectionPool connectionPool;
 
-    private final long periodForHealthCheckInMillis;
+    private final Duration periodForHealthCheckInDuration;
     private final HealthCheck healthCheck;
 
     private Database (int maxConnections,
                       int minConnections,
                       String jdbcUrl,
                       HealthCheck healthCheck,
-                      long periodForHealthCheckInMillis) {
-        this.periodForHealthCheckInMillis = periodForHealthCheckInMillis;
+                      Duration periodForHealthCheckInDuration) {
+        this.periodForHealthCheckInDuration = periodForHealthCheckInDuration;
         this.healthCheck = healthCheck;
         this.connectionPool =
                 new ConnectionPool(
@@ -84,7 +84,7 @@ public final class Database {
     }
 
     private void createIntervalForHealthChecking() {
-        Flux.interval(Duration.ofMillis(this.periodForHealthCheckInMillis))
+        Flux.interval(this.periodForHealthCheckInDuration)
                 .doOnEach(ignore -> {
                     log.debug("Health checking...");
                     executeQuery(healthCheck.getSql()).subscribe();
@@ -97,6 +97,7 @@ public final class Database {
         private int maxConnections = 10;
         private int minConnections = 5;
         private long periodForHealthCheckInMillis = 5000;
+        private Duration duration = Duration.ofMillis(periodForHealthCheckInMillis);
         private String jdbcUrl;
         private HealthCheck healthCheck = HealthCheck.OTHER;
 
@@ -112,9 +113,16 @@ public final class Database {
             return this;
         }
 
+        @Deprecated
         public Builder periodForHealthCheckInMillis(int millis) {
             Utils.valueRequirePositive(millis, Option.none());
             this.periodForHealthCheckInMillis = millis;
+            return this;
+        }
+
+        public Builder periodForHealthCheck(Duration duration) {
+            Utils.objectRequireNonNull(duration, Option.some("Health check duration cannot be empty!"));
+            this.duration = duration;
             return this;
         }
 
@@ -136,7 +144,7 @@ public final class Database {
                     this.minConnections,
                     this.jdbcUrl,
                     this.healthCheck,
-                    this.periodForHealthCheckInMillis
+                    this.duration
             );
         }
     }
