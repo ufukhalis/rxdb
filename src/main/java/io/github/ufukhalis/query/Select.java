@@ -4,6 +4,8 @@ import io.github.ufukhalis.Predicates;
 import io.github.ufukhalis.Column;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -14,6 +16,8 @@ import static io.vavr.API.*;
 
 public class Select extends QueryParameter<Select> {
 
+    private static final Logger log = LoggerFactory.getLogger(Select.class);
+
     private Function<String, Flux<ResultSet>> queryFunc;
 
     public Select(String sql, Function<String, Flux<ResultSet>> queryFunc) {
@@ -22,10 +26,12 @@ public class Select extends QueryParameter<Select> {
     }
 
     public Flux<ResultSet> get() {
+        log.debug("Getting results..");
         return queryFunc.apply(getBindedSql());
     }
 
     public <T> Flux<T> get(Class<T> clazz) {
+        log.debug("Getting results as class..");
         return queryFunc.apply(getBindedSql())
                 .map(resultSet ->
                         Try.of(() -> find(resultSet, clazz))
@@ -34,6 +40,7 @@ public class Select extends QueryParameter<Select> {
     }
 
     public <T> Mono<T> findFirst(Class<T> clazz) {
+        log.debug("Finding first record..");
         return get(clazz).collectList()
                 .flatMap(resultList ->
                         Try.of(() -> Mono.just(resultList.get(0)))

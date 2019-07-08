@@ -4,11 +4,14 @@ import io.github.ufukhalis.Predicates;
 import io.github.ufukhalis.Utils;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.vavr.API.*;
 
 class QueryParameter <T> {
 
+    private static final Logger log = LoggerFactory.getLogger(QueryParameter.class);
     private final static String BIND_PARAM_HOLDER = "\\?";
 
     private String bindedSql;
@@ -25,6 +28,9 @@ class QueryParameter <T> {
     String bind(final String sql, List<Object> params) {
         Utils.objectRequireNonNull(params, Option.some("Parameters cannot be null!s"));
         Utils.checkCondition(params.size() > 0, Option.some("Parameters cannot be empty!"));
+
+        log.debug("Binding parameters..");
+        log.debug("Sql {}, parameters {}", sql, params.mkString());
 
         this.bindedSql = sql;
 
