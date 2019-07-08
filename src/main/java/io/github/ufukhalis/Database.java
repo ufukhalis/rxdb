@@ -3,6 +3,7 @@ package io.github.ufukhalis;
 import io.github.ufukhalis.db.ConnectionPool;
 import io.github.ufukhalis.db.HealthCheck;
 import io.github.ufukhalis.query.Select;
+import io.github.ufukhalis.query.Update;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
@@ -43,7 +44,11 @@ public final class Database {
     }
 
     public Select select(String sql) {
-        return new Select(executeQuery(sql));
+        return new Select(sql, this::executeQuery);
+    }
+
+    public Update update(String sql) {
+        return new Update(sql, this::executeUpdate);
     }
 
     public Flux<ResultSet> executeQuery(String sql) {

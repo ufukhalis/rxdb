@@ -69,4 +69,15 @@ public class DatabaseTests {
 
         Assertions.assertEquals(2, list.size());
     }
+
+    @Test
+    void test_select_findFirst_shouldReturn_a_object() {
+        database.executeUpdate(createTableSql).block();
+        database.executeUpdate(insertSql).block();
+
+        TestEntity testEntity = database.select(selectSql)
+                .findFirst(TestEntity.class).block();
+
+        Assertions.assertNotNull(testEntity);
+    }
 }

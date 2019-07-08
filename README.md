@@ -34,11 +34,27 @@ Inserting a record to the table.
 
     final String insertSql = "INSERT INTO table_name VALUES (1, 'Ufuk', 'Halis', 28)";
     Mono<Integer> resultMono = database.executeUpdate(insertSql);
+
+Or you can follow below approach.
+    
+    final String insertSql = "INSERT INTO table_name VALUES (?, ?, ?, ?)";
+    Mono<Integer> resultMono = database.update(insertSql)
+            .bindParameters(1, "Ufuk", "Halis", 28)
+            .get();
+
     
 Fetching records from the table.
 
-    final String selectSql = "select * from table_name";
+    final String selectSql = "select * from table_name where id=1";
     Flux<ResultSet> resultFlux = database.executeQuery(selectSql);
+
+Or you can follow below approach.
+    
+    final String selectSql = "select * from table_name where id=?";
+    Flux<ResultSet> resultFlux = database.select(selectSql);
+            .bindParameters(1)
+            .get();
+   
 
 You can also map your records directly to Java Object too.
 Firstly, you should add `@Column` annotation to your pojo class like below.

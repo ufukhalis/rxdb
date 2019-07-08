@@ -69,12 +69,14 @@ public class ConnectionPool {
     }
 
     public void add(Mono<Connection> connectionMono) {
+        log.debug("Connection {} adding to dead pool..", connectionMono);
         this.DEAD_POOL.add(connectionMono);
         this.clearTheDeadPool();
     }
 
     private void clearTheDeadPool() {
         if (this.DEAD_POOL.size() > MAX_DEAD_POOL_SIZE) {
+            log.debug("DeadPool reached max size. Clearing..");
             final Queue<Mono<Connection>> temp = new ConcurrentLinkedQueue<>(this.DEAD_POOL);
             this.DEAD_POOL.clear();
             Flux.fromIterable(temp)
