@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.util.List;
 
 public class DatabaseTests {
@@ -27,7 +28,7 @@ public class DatabaseTests {
     final Database database = new Database.Builder()
             .maxConnections(5)
             .minConnections(2)
-            .periodForHealthCheckInMillis(5000)
+            .periodForHealthCheck(Duration.ofSeconds(5))
             .jdbcUrl("jdbc:h2:~/test")
             .healthCheck(HealthCheck.H2)
             .build();
@@ -68,5 +69,16 @@ public class DatabaseTests {
                 .block();
 
         Assertions.assertEquals(2, list.size());
+    }
+
+    @Test
+    void test_select_findFirst_shouldReturn_a_object() {
+        database.executeUpdate(createTableSql).block();
+        database.executeUpdate(insertSql).block();
+
+        TestEntity testEntity = database.select(selectSql)
+                .findFirst(TestEntity.class).block();
+
+        Assertions.assertNotNull(testEntity);
     }
 }

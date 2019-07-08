@@ -3,6 +3,7 @@ package io.github.ufukhalis;
 import io.github.ufukhalis.db.ConnectionPool;
 import io.github.ufukhalis.db.HealthCheck;
 import io.github.ufukhalis.query.Select;
+import io.github.ufukhalis.query.Update;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
@@ -22,15 +23,15 @@ public final class Database {
 
     private final ConnectionPool connectionPool;
 
-    private final long periodForHealthCheckInMillis;
+    private final Duration periodForHealthCheckInDuration;
     private final HealthCheck healthCheck;
 
     private Database (int maxConnections,
                       int minConnections,
                       String jdbcUrl,
                       HealthCheck healthCheck,
-                      long periodForHealthCheckInMillis) {
-        this.periodForHealthCheckInMillis = periodForHealthCheckInMillis;
+                      Duration periodForHealthCheckInDuration) {
+        this.periodForHealthCheckInDuration = periodForHealthCheckInDuration;
         this.healthCheck = healthCheck;
         this.connectionPool =
                 new ConnectionPool(
@@ -43,7 +44,11 @@ public final class Database {
     }
 
     public Select select(String sql) {
-        return new Select(executeQuery(sql));
+        return new Select(sql, this::executeQuery);
+    }
+
+    public Update update(String sql) {
+        return new Update(sql, this::executeUpdate);
     }
 
     public Flux<ResultSet> executeQuery(String sql) {
@@ -79,7 +84,7 @@ public final class Database {
     }
 
     private void createIntervalForHealthChecking() {
-        Flux.interval(Duration.ofMillis(this.periodForHealthCheckInMillis))
+        Flux.interval(this.periodForHealthCheckInDuration)
                 .doOnEach(ignore -> {
                     log.debug("Health checking...");
                     executeQuery(healthCheck.getSql()).subscribe();
@@ -92,6 +97,7 @@ public final class Database {
         private int maxConnections = 10;
         private int minConnections = 5;
         private long periodForHealthCheckInMillis = 5000;
+        private Duration duration = Duration.ofMillis(periodForHealthCheckInMillis);
         private String jdbcUrl;
         private HealthCheck healthCheck = HealthCheck.OTHER;
 
@@ -107,9 +113,16 @@ public final class Database {
             return this;
         }
 
+        @Deprecated
         public Builder periodForHealthCheckInMillis(int millis) {
             Utils.valueRequirePositive(millis, Option.none());
             this.periodForHealthCheckInMillis = millis;
+            return this;
+        }
+
+        public Builder periodForHealthCheck(Duration duration) {
+            Utils.objectRequireNonNull(duration, Option.some("Health check duration cannot be empty!"));
+            this.duration = duration;
             return this;
         }
 
@@ -131,7 +144,7 @@ public final class Database {
                     this.minConnections,
                     this.jdbcUrl,
                     this.healthCheck,
-                    this.periodForHealthCheckInMillis
+                    this.duration
             );
         }
     }
