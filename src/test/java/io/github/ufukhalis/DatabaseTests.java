@@ -28,7 +28,7 @@ public class DatabaseTests {
     final Database database = new Database.Builder()
             .maxConnections(5)
             .minConnections(2)
-            .periodForHealthCheck(Duration.ofSeconds(5))
+            .periodForHealthCheck(Duration.ofMillis(100))
             .jdbcUrl("jdbc:h2:~/test")
             .healthCheck(HealthCheck.H2)
             .build();
@@ -97,6 +97,18 @@ public class DatabaseTests {
 
 
         Assertions.assertTrue(result);
+    }
+
+
+    @Test
+    void test_invalid_database_object_shouldThrow_exception() {
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                new Database.Builder()
+                        .jdbcUrl(null).build());
+
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                new Database.Builder()
+                        .periodForHealthCheckInMillis(-1000).build());
     }
 
     private void createTable() {
