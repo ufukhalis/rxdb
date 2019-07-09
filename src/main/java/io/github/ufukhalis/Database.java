@@ -3,7 +3,9 @@ package io.github.ufukhalis;
 import io.github.ufukhalis.db.ConnectionPool;
 import io.github.ufukhalis.db.HealthCheck;
 import io.github.ufukhalis.query.Select;
+import io.github.ufukhalis.query.TransactionalUpdate;
 import io.github.ufukhalis.query.Update;
+import io.vavr.collection.List;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.concurrent.Executors;
@@ -51,7 +54,11 @@ public final class Database {
         return new Update(sql, this::executeUpdate);
     }
 
-    public Flux<ResultSet> executeQuery(String sql) {
+    public TransactionalUpdate tx(String sql) {
+        return new TransactionalUpdate(sql, this::executeTxQuery);
+    }
+
+    Flux<ResultSet> executeQuery(String sql) {
         Utils.objectRequireNonNull(sql, Option.some("Sql query cannot be empty!"));
 
         log.debug("Executing query -> {}", sql);
@@ -70,7 +77,7 @@ public final class Database {
     }
 
 
-    public Mono<Integer> executeUpdate(String sql) {
+    Mono<Integer> executeUpdate(String sql) {
         Utils.objectRequireNonNull(sql, Option.some("Sql query cannot be empty!"));
 
         Mono<Connection> connectionMono = this.connectionPool.getConnection();
@@ -81,6 +88,38 @@ public final class Database {
                     .of(statement -> statement.executeUpdate(sql))
                     .getOrElseThrow(e -> new RuntimeException("Query execution failed", e));
         }).doFinally(ignore -> this.connectionPool.add(connectionMono));
+    }
+
+    Mono<Boolean> executeTxQuery(String ...queries) {
+        Utils.objectRequireNonNull(queries, Option.some("Sql query cannot be empty!"));
+
+        Mono<Connection> connectionMono = this.connectionPool.getTxConnection();
+
+        return connectionMono.map(connection -> {
+            log.debug("Executing transaction queries...");
+            boolean result = List.of(queries)
+                    .forAll(query ->
+                            Try.withResources(() -> connection.prepareStatement(query))
+                                    .of(PreparedStatement::execute).isSuccess()
+                    );
+            if (result) {
+                return Try.run(connection::commit).map(ignore -> {
+                    log.debug("Transaction committed..");
+                    return true;
+                }).onFailure(throwable -> rollback(connection))
+                        .getOrElseThrow(e -> new RuntimeException("Transaction rollback failed", e));
+            } else {
+                return rollback(connection)
+                        .getOrElseThrow(e -> new RuntimeException("Transaction rollback failed", e));
+            }
+        }).doFinally(ignore -> this.connectionPool.add(connectionMono));
+    }
+
+    private Try<Boolean> rollback(Connection connection) {
+        return Try.run(connection::rollback).map(ignore -> {
+            log.debug("Transaction rolling back..");
+            return false;
+        });
     }
 
     private void createIntervalForHealthChecking() {

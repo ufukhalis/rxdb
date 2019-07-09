@@ -18,14 +18,18 @@ public class DbConnection {
     }
 
     static Mono<Connection> createFromMono(@NonNull String jdbcUrl) {
-        return Mono.fromCallable(() -> createFrom(jdbcUrl));
+        return Mono.fromCallable(() -> createFrom(jdbcUrl, true));
     }
 
-    private static Connection createFrom(@NonNull String jdbcUrl) {
+    static Mono<Connection> createFromMono(@NonNull String jdbcUrl, boolean autoCommit) {
+        return Mono.fromCallable(() -> createFrom(jdbcUrl, autoCommit));
+    }
+
+    private static Connection createFrom(@NonNull String jdbcUrl, boolean autoCommit) {
         return Try.of(() -> {
             log.debug("Creating connection via jdbc url {}", jdbcUrl);
             final Connection connection = DriverManager.getConnection(jdbcUrl);
-            connection.setAutoCommit(true);
+            connection.setAutoCommit(autoCommit);
             return connection;
         }).getOrElseThrow(() -> new RuntimeException("Connection couldn't created"));
     }
