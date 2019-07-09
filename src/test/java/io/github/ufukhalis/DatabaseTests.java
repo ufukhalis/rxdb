@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.util.Date;
 import java.util.List;
 
 public class DatabaseTests {
@@ -97,6 +98,20 @@ public class DatabaseTests {
 
 
         Assertions.assertTrue(result);
+    }
+
+    @Test
+    void test_tx_get_shouldNotComplete_transaction() {
+        createTable();
+
+        final String txSql = "INSERT INTO REGISTER " + "VALUES (?, ?, ?, ?)";
+
+        Boolean result = database.tx(txSql)
+                .bindParameters(3, "ufuk", "halis", 28, 4, "bob", "dylan", new Date())
+                .get().block();
+
+
+        Assertions.assertFalse(result);
     }
 
 
