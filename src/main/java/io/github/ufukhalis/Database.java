@@ -97,20 +97,29 @@ public final class Database {
 
         return connectionMono.map(connection -> {
             log.debug("Executing transaction queries...");
-            List.of(queries)
-                    .map(query ->
+            boolean result = List.of(queries)
+                    .forAll(query ->
                             Try.withResources(() -> connection.prepareStatement(query))
-                                    .of(PreparedStatement::execute)
-                            .getOrElseThrow(e -> new RuntimeException("Transaction query executing failed", e))
+                                    .of(PreparedStatement::execute).isSuccess()
                     );
-            return Try.run(connection::commit).map(ignore -> {
-                log.debug("Transaction committed..");
-                return true;
-            }).onFailure(throwable -> Try.run(connection::rollback).map(ignore -> {
-                log.debug("Transaction rolling back..");
-                return false;
-            })).getOrElseThrow(e -> new RuntimeException("Transaction rollback failed", e));
+            if (result) {
+                return Try.run(connection::commit).map(ignore -> {
+                    log.debug("Transaction committed..");
+                    return true;
+                }).onFailure(throwable -> rollback(connection))
+                        .getOrElseThrow(e -> new RuntimeException("Transaction rollback failed", e));
+            } else {
+                return rollback(connection)
+                        .getOrElseThrow(e -> new RuntimeException("Transaction rollback failed", e));
+            }
         }).doFinally(ignore -> this.connectionPool.add(connectionMono));
+    }
+
+    private Try<Boolean> rollback(Connection connection) {
+        return Try.run(connection::rollback).map(ignore -> {
+            log.debug("Transaction rolling back..");
+            return false;
+        });
     }
 
     private void createIntervalForHealthChecking() {
