@@ -2,6 +2,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/ufukhalis/rxdb/badge.svg?branch=master)](https://coveralls.io/github/ufukhalis/rxdb?branch=master)
 ![Maven Central](https://img.shields.io/maven-central/v/io.github.ufukhalis/rxdb.svg)
 
+![Alt text](rxdb-logo-mini.png?raw=true "RXDB")
+
 RXDB
 ===================
 A reactive library option for JDBC calls. In the background, it uses Reactor library (https://projectreactor.io).
