@@ -42,7 +42,8 @@ public class DatabaseTests {
 
     @Test
     void test_executeQuery_shouldReturn_correctSize() {
-        database.executeUpdate(createTableSql).block();
+        createTable();
+
         database.executeUpdate(insertSql).block();
         database.executeUpdate(insertSql2).block();
 
@@ -58,7 +59,8 @@ public class DatabaseTests {
 
     @Test
     void test_select_get_shouldReturn_valid_listSize() {
-        database.executeUpdate(createTableSql).block();
+        createTable();
+
         database.executeUpdate(insertSql).block();
         database.executeUpdate(insertSql2).block();
 
@@ -73,12 +75,31 @@ public class DatabaseTests {
 
     @Test
     void test_select_findFirst_shouldReturn_a_object() {
-        database.executeUpdate(createTableSql).block();
+        createTable();
+
         database.executeUpdate(insertSql).block();
 
         TestEntity testEntity = database.select(selectSql)
                 .findFirst(TestEntity.class).block();
 
         Assertions.assertNotNull(testEntity);
+    }
+
+    @Test
+    void test_tx_get_shouldComplete_transaction() {
+        createTable();
+
+        final String txSql = "INSERT INTO REGISTER " + "VALUES (?, ?, ?, ?)";
+
+        Boolean result = database.tx(txSql)
+                .bindParameters(3, "ufuk", "halis", 28, 4, "bob", "dylan", 30)
+                .get().block();
+
+
+        Assertions.assertTrue(result);
+    }
+
+    private void createTable() {
+        database.executeUpdate(createTableSql).block();
     }
 }
