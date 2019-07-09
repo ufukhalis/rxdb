@@ -37,6 +37,10 @@ public class ConnectionPool {
         this.CONNECTION_POOL.addAll(createConnectionWithMaxValue(maxConnections).asJava());
     }
 
+    public Mono<Connection> getTxConnection() {
+        return DbConnection.createFromMono(this.jdbcUrl, false);
+    }
+
     private List<Mono<Connection>> createConnectionWithMaxValue(int max) {
         log.debug("Adding new connections to pool...");
         return List.range(0, max)

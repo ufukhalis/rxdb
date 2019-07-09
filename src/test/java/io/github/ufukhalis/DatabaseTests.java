@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.util.Date;
 import java.util.List;
 
 public class DatabaseTests {
@@ -28,7 +29,7 @@ public class DatabaseTests {
     final Database database = new Database.Builder()
             .maxConnections(5)
             .minConnections(2)
-            .periodForHealthCheck(Duration.ofSeconds(5))
+            .periodForHealthCheck(Duration.ofMillis(100))
             .jdbcUrl("jdbc:h2:~/test")
             .healthCheck(HealthCheck.H2)
             .build();
@@ -42,7 +43,8 @@ public class DatabaseTests {
 
     @Test
     void test_executeQuery_shouldReturn_correctSize() {
-        database.executeUpdate(createTableSql).block();
+        createTable();
+
         database.executeUpdate(insertSql).block();
         database.executeUpdate(insertSql2).block();
 
@@ -58,7 +60,8 @@ public class DatabaseTests {
 
     @Test
     void test_select_get_shouldReturn_valid_listSize() {
-        database.executeUpdate(createTableSql).block();
+        createTable();
+
         database.executeUpdate(insertSql).block();
         database.executeUpdate(insertSql2).block();
 
@@ -73,12 +76,57 @@ public class DatabaseTests {
 
     @Test
     void test_select_findFirst_shouldReturn_a_object() {
-        database.executeUpdate(createTableSql).block();
+        createTable();
+
         database.executeUpdate(insertSql).block();
 
         TestEntity testEntity = database.select(selectSql)
                 .findFirst(TestEntity.class).block();
 
         Assertions.assertNotNull(testEntity);
+    }
+
+    @Test
+    void test_tx_get_shouldComplete_transaction() {
+        createTable();
+
+        final String txSql = "INSERT INTO REGISTER " + "VALUES (?, ?, ?, ?)";
+
+        Boolean result = database.tx(txSql)
+                .bindParameters(3, "ufuk", "halis", 28, 4, "bob", "dylan", 30)
+                .get().block();
+
+
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void test_tx_get_shouldNotComplete_transaction() {
+        createTable();
+
+        final String txSql = "INSERT INTO REGISTER " + "VALUES (?, ?, ?, ?)";
+
+        Boolean result = database.tx(txSql)
+                .bindParameters(3, "ufuk", "halis", 28, 4, "bob", "dylan", new Date())
+                .get().block();
+
+
+        Assertions.assertFalse(result);
+    }
+
+
+    @Test
+    void test_invalid_database_object_shouldThrow_exception() {
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                new Database.Builder()
+                        .jdbcUrl(null).build());
+
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                new Database.Builder()
+                        .periodForHealthCheckInMillis(-1000).build());
+    }
+
+    private void createTable() {
+        database.executeUpdate(createTableSql).block();
     }
 }

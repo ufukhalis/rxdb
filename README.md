@@ -1,6 +1,9 @@
 [![Build Status](https://travis-ci.org/ufukhalis/rxdb.svg?branch=master)](https://travis-ci.org/ufukhalis/rxdb)
 [![Coverage Status](https://coveralls.io/repos/github/ufukhalis/rxdb/badge.svg?branch=master)](https://coveralls.io/github/ufukhalis/rxdb?branch=master)
 ![Maven Central](https://img.shields.io/maven-central/v/io.github.ufukhalis/rxdb.svg)
+[![Join the chat at https://gitter.im/sahat/hackathon-starter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/rxdb-community/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+![Alt text](rxdb-logo-mini.png?raw=true "RXDB")
 
 RXDB
 ===================
@@ -13,7 +16,7 @@ Firstly, you should add latest `rxdb` dependency to your project.
     <dependency>
         <groupId>io.github.ufukhalis</groupId>
         <artifactId>rxdb</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0</version>
     </dependency>
     
 Then you need to add jdbc driver for your database which you want to connect.
@@ -31,11 +34,6 @@ After, adding dependencies, you can create an instance from `Database` class.
 Using `Database` instance, you can send queries to your database.
 
 Inserting a record to the table.
-
-    final String insertSql = "INSERT INTO table_name VALUES (1, 'Ufuk', 'Halis', 28)";
-    Mono<Integer> resultMono = database.executeUpdate(insertSql);
-
-Or you can follow below approach.
     
     final String insertSql = "INSERT INTO table_name VALUES (?, ?, ?, ?)";
     Mono<Integer> resultMono = database.update(insertSql)
@@ -44,17 +42,23 @@ Or you can follow below approach.
 
     
 Fetching records from the table.
-
-    final String selectSql = "select * from table_name where id=1";
-    Flux<ResultSet> resultFlux = database.executeQuery(selectSql);
-
-Or you can follow below approach.
     
     final String selectSql = "select * from table_name where id=?";
     Flux<ResultSet> resultFlux = database.select(selectSql);
             .bindParameters(1)
             .get();
-   
+
+Also you can create transactional query like below.
+
+    final String insertSql = "INSERT INTO REGISTER " + "VALUES (?, ?, ?, ?)";
+    
+    Mono<Boolean> result = database.tx(insertSql)
+            .bindParameters(3, "ufuk", "halis", 28, 4, "bob", "dylan", new Date())
+            .get();
+ 
+In the above code, `insertSql` query will try to run two times regarding parameters to `bindParameters` method.
+If an error occurs, it will throw an exception and changes will be rollback.
+
 
 You can also map your records directly to Java Object too.
 Firstly, you should add `@Column` annotation to your pojo class like below.
