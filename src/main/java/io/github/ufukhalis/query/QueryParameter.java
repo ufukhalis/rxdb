@@ -21,20 +21,22 @@ class QueryParameter <T> {
     }
 
     public T bindParameters(Object ...params) {
-        this.bindedSql = bind(this.bindedSql, List.of(params));
+        this.bindedSql = bind(this.bindedSql, params != null ? List.of(params): List.empty());
         return (T) this;
     }
 
     String bind(final String sql, List<Object> params) {
         Utils.objectRequireNonNull(params, Option.some("Parameters cannot be null!s"));
-        Utils.checkCondition(params.size() > 0, Option.some("Parameters cannot be empty!"));
 
         log.debug("Binding parameters..");
         log.debug("Sql {}, parameters {}", sql, params.mkString());
 
-        this.bindedSql = sql;
+        String bindedSql = params
+                .fold(sql, (o1, o2) ->
+                        o1.toString().replaceFirst(BIND_PARAM_HOLDER, resolveTypeForSQLValue(o2)))
+                .toString();
 
-        params.forEach(o -> this.bindedSql = bindedSql.replaceFirst(BIND_PARAM_HOLDER, resolveTypeForSQLValue(o)));
+        this.bindedSql = bindedSql;
 
         return bindedSql;
     }
