@@ -53,7 +53,7 @@ Also you can create transactional query like below.
     final String insertSql = "INSERT INTO REGISTER " + "VALUES (?, ?, ?, ?)";
     
     Mono<Boolean> result = database.tx(insertSql)
-            .bindParameters(3, "ufuk", "halis", 28, 4, "bob", "dylan", new Date())
+            .bindParameters(3, "ufuk", "halis", 28, 4, "bob", "dylan", 34)
             .get();
  
 In the above code, `insertSql` query will try to run two times regarding parameters to `bindParameters` method.
@@ -88,6 +88,7 @@ After, you can use your `database` instance like below.
 Also, if you would like to get only one result, you can use `findFirst` method.
     
     Mono<TestEntity> result = database
+                    .select(selectSql)
                     .findFirst(TestEntity.class);
 
 Note
