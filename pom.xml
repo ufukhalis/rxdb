@@ -6,7 +6,7 @@
 
     <groupId>io.github.ufukhalis</groupId>
     <artifactId>rxdb</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <name>rxdb</name>
     <description>Reactive library for JDBC calls</description>
     <url>https://github.com/ufukhalis/rxdb</url>
